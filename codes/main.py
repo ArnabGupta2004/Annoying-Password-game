@@ -12,8 +12,8 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.core.clipboard import Clipboard
 from kivy.graphics import Color, RoundedRectangle
 
-Window.size = (360, 640)  # Android-like resolution
-Window.clearcolor = (0.1, 0.1, 0.1, 1)  # Dark background
+Window.size = (360, 640) 
+Window.clearcolor = (0.1, 0.1, 0.1, 1) 
 
 class PasswordGameApp(App):
     icon = 'icon.png'
@@ -27,7 +27,6 @@ class PasswordGameApp(App):
 
         self.layout = FloatLayout()
 
-        # Load multiple fail sounds
         self.fail_sounds = [
             SoundLoader.load("sounds/fail.wav"),
             SoundLoader.load("sounds/fail2.wav"),
@@ -35,7 +34,6 @@ class PasswordGameApp(App):
             SoundLoader.load("sounds/fail4.wav")
         ]
 
-        # Title
         self.title_label = Label(
             text="[b]ENTER YOUR\nPASSWORD[/b]",
             markup=True,
@@ -48,7 +46,6 @@ class PasswordGameApp(App):
             halign='center'
         )
 
-        # Password Input Box
         self.password_input = TextInput(
             password=False,
             multiline=False,
@@ -59,14 +56,13 @@ class PasswordGameApp(App):
             pos_hint={'center_x': 0.5, 'top': 0.78},
             background_normal='',
             background_active='',
-            background_color=(0.3, 0.3, 0.3, 1),  # Dark background
+            background_color=(0.3, 0.3, 0.3, 1), 
             foreground_color=(1, 1, 1, 1),
             cursor_color=(1, 0.6, 0.1, 1),
             padding=(15, 12),
             halign='center'
         )
 
-        # Submit Button
         self.submit_btn = Button(
             text="SUBMIT",
             font_size=23,
@@ -77,11 +73,10 @@ class PasswordGameApp(App):
             pos_hint={'center_x': 0.5, 'y': 0.05},
             background_normal='',
             background_down='',
-            background_color=(1, 0.5, 0.1, 1)  # Orange solid background (no canvas borders)
+            background_color=(1, 0.5, 0.1, 1) 
         )
         self.submit_btn.bind(on_press=self.check_password)
 
-        # Feedback
         self.result_label = Label(
             text="",
             font_size=20,
@@ -92,10 +87,8 @@ class PasswordGameApp(App):
             pos_hint={'center_x': 0.5, 'top': 0.86}
         )
 
-        # Rules Container
         self.rules_container = FloatLayout()
 
-        # Order of widgets matters!
         self.layout.add_widget(self.title_label)
         self.layout.add_widget(self.result_label)
         self.layout.add_widget(self.submit_btn)
@@ -131,12 +124,10 @@ class PasswordGameApp(App):
     def check_password(self, instance):
         pwd = self.password_input.text.strip().lower()
 
-        # Easter Egg: Rickroll
         if pwd == "rickroll":
             self.show_rickroll_popup()
             return
 
-        # Easter Egg: Bouncing Pig
         if pwd == "pig":
             self.spawn_bouncing_emoji("🐷")
             return
@@ -194,7 +185,7 @@ class PasswordGameApp(App):
                         pos_hint={'center_x': 0.5, 'top': 0.7})
         
         with box.canvas.before:
-            Color(0.2, 0.2, 0.2, 0.8)  # Semi-transparent dark box
+            Color(0.2, 0.2, 0.2, 0.8) 
             box.bg = RoundedRectangle(radius=[10], pos=box.pos, size=box.size)
 
         box.bind(pos=self.update_box_bg, size=self.update_box_bg)
@@ -325,18 +316,16 @@ class PasswordGameApp(App):
             font_size=64,
             size_hint=(None, None),
             size=(100, 100),
-            pos=(random.randint(0, 260), random.randint(0, 540))  # Random initial pos
+            pos=(random.randint(0, 260), random.randint(0, 540)) 
         )
         self.layout.add_widget(emoji_label)
 
-        # Start bouncing diagonally
         self.bounce_emoji(emoji_label, dx=5, dy=5)
     def bounce_emoji(self, widget, dx, dy):
         def move(dt):
             new_x = widget.x + dx
             new_y = widget.y + dy
 
-            # Bounce off edges
             if new_x < 0 or new_x + widget.width > Window.width:
                 dx_ref[0] *= -1
             if new_y < 0 or new_y + widget.height > Window.height:
