@@ -1,4 +1,5 @@
 import random
+import time
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
@@ -18,6 +19,38 @@ from kivy.clock import Clock
 Window.size = (360, 640)
 Window.clearcolor = (0, 0, 0, 1)
 
+class HoverEscapeBehavior:
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._last_escape_time = 0
+        Clock.schedule_interval(self.check_mouse_proximity, 1 / 30) 
+
+    def check_mouse_proximity(self, dt):
+        if not self.get_root_window():
+            return
+
+        mx, my = Window.mouse_pos
+        bx, by = self.to_window(*self.pos)
+        bw, bh = self.size
+
+        margin = 10 
+        if (bx - margin < mx < bx + bw + margin) and (by - margin < my < by + bh + margin):
+            now = time.time()
+            if now - self._last_escape_time > 1.2: 
+                if random.random() < 0.1: 
+                    self._last_escape_time = now
+                    self.escape()
+
+    def escape(self):
+        new_x = random.uniform(0.2, 0.8)
+        new_y = random.uniform(0.1, 0.6)
+        anim = Animation(pos_hint={'center_x': new_x, 'y': new_y}, duration=0.3)
+        anim.start(self)
+
+class EscapingButton(Button, HoverEscapeBehavior):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 class PasswordGameApp(App):
     icon = 'assets/icon.png'
 
@@ -31,7 +64,6 @@ class PasswordGameApp(App):
 
         self.layout = FloatLayout()
 
-        # Background Image
         self.bg_image = AsyncImage(
             source='assets/bg.png',
             size_hint=(None, None),
@@ -100,7 +132,7 @@ class PasswordGameApp(App):
             halign='center'
         )
 
-        self.submit_btn = Button(
+        self.submit_btn = EscapingButton(
             text="SUBMIT",
             font_size=23,
             font_name="fonts/habeshapixels.bold.ttf",
@@ -110,7 +142,7 @@ class PasswordGameApp(App):
             pos_hint={'center_x': 0.5, 'y': 0.05},
             background_normal='',
             background_down='',
-            background_color=(1, 0.5, 0.1, 1)
+            background_color=(1, 0.5, 0.1, 1) 
         )
         self.submit_btn.bind(on_press=self.check_password)
 
@@ -126,7 +158,6 @@ class PasswordGameApp(App):
 
         self.rules_container = FloatLayout()
 
-        # Add all UI widgets AFTER the background
         self.layout.add_widget(self.title_label)
         self.layout.add_widget(self.result_label)
         self.layout.add_widget(self.rules_container)
@@ -135,6 +166,7 @@ class PasswordGameApp(App):
 
         return self.layout
 
+    
     def on_stop(self):
         if self.bg_music:
             self.bg_music.stop()
@@ -166,12 +198,10 @@ class PasswordGameApp(App):
     def check_password(self, instance):
         pwd = self.password_input.text.strip().lower()
 
-        # Easter Egg: Rickroll
         if pwd == "rickroll":
             self.show_rickroll_popup()
             return
 
-        # Easter Egg: Bouncing Pig
         if pwd == "pig":
             self.spawn_bouncing_emoji("🐷")
             return
@@ -229,7 +259,7 @@ class PasswordGameApp(App):
                         pos_hint={'center_x': 0.5, 'top': 0.7})
         
         with box.canvas.before:
-            Color(0.2, 0.2, 0.2, 0.8)  # Semi-transparent dark box
+            Color(0.2, 0.2, 0.2, 0.8)
             box.bg = RoundedRectangle(radius=[10], pos=box.pos, size=box.size)
 
         box.bind(pos=self.update_box_bg, size=self.update_box_bg)
@@ -383,7 +413,6 @@ class PasswordGameApp(App):
             new_x = widget.x + dx
             new_y = widget.y + dy
 
-            # Bounce off edges
             if new_x < 0 or new_x + widget.width > Window.width:
                 dx_ref[0] *= -1
             if new_y < 0 or new_y + widget.height > Window.height:
