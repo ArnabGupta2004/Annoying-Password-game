@@ -3,7 +3,7 @@
 🎮 **Annoying Password Game** is a ridiculous, frustrating, and hilarious password-making simulator built with Python and Kivy.  
 It's *designed to test your patience* while forcing you to create the "perfect" password!
 
-> Can you find the Easter egg?
+> Can you find the Easter eggs?
 > 🔊 Sound On, Please!
 
 ---
@@ -11,7 +11,7 @@ It's *designed to test your patience* while forcing you to create the "perfect" 
 ## 🖥️ How to Play (Windows)
 
 1. Download and extract the `APG(Play game).zip`.
-2. Run the `APG.exe`.
+2. Run the `main.exe`.
 3. Enter your password in the input box and click **Submit**.
 4. Good luck 😈
 
