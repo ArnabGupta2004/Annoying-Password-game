@@ -1,7 +1,7 @@
 # 🔐 Annoying Password Game
 
 🎮 **Annoying Password Game** is a ridiculous, frustrating, and hilarious password-making simulator built with Python and Kivy.  
-It's *designed to test your patience* while forcing you to create the "perfect" password… one infuriating rule at a time!
+It's *designed to test your patience* while forcing you to create the "perfect" password!
 
 ---
 
