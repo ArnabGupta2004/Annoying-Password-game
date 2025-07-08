@@ -10,13 +10,17 @@ from kivy.core.window import Window
 from kivy.core.audio import SoundLoader
 from kivy.uix.boxlayout import BoxLayout
 from kivy.core.clipboard import Clipboard
+from kivy.uix.image import AsyncImage, Image
 from kivy.graphics import Color, RoundedRectangle
+from kivy.clock import Clock
 
-Window.size = (360, 640) 
-Window.clearcolor = (0.1, 0.1, 0.1, 1) 
+
+Window.size = (360, 640)
+Window.clearcolor = (0, 0, 0, 1)
 
 class PasswordGameApp(App):
-    icon = 'icon.png'
+    icon = 'assets/icon.png'
+
     def build(self):
         self.rules = self.get_all_rules()
         random.shuffle(self.rules)
@@ -26,6 +30,39 @@ class PasswordGameApp(App):
         self.first_input_done = False
 
         self.layout = FloatLayout()
+
+        # Background Image
+        self.bg_image = AsyncImage(
+            source='assets/bg.png',
+            size_hint=(None, None),
+            allow_stretch=True,
+            keep_ratio=True
+        )
+        self.layout.add_widget(self.bg_image)
+
+        def update_bg(*args):
+            window_ratio = Window.width / Window.height
+            img_ratio = 1920 / 1080
+            if window_ratio > img_ratio:
+                self.bg_image.width = Window.width
+                self.bg_image.height = Window.width / img_ratio
+            else:
+                self.bg_image.height = Window.height
+                self.bg_image.width = Window.height * img_ratio
+            self.bg_image.pos = (
+                (Window.width - self.bg_image.width) / 2,
+                (Window.height - self.bg_image.height) / 2
+            )
+
+        Window.bind(size=update_bg)
+        Clock.schedule_once(lambda dt: update_bg(), 0)
+
+
+        self.bg_music = SoundLoader.load("sounds/bgm.wav")
+        if self.bg_music:
+            self.bg_music.loop = True
+            self.bg_music.volume = 0.08
+            self.bg_music.play()
 
         self.fail_sounds = [
             SoundLoader.load("sounds/fail.wav"),
@@ -56,7 +93,7 @@ class PasswordGameApp(App):
             pos_hint={'center_x': 0.5, 'top': 0.78},
             background_normal='',
             background_active='',
-            background_color=(0.3, 0.3, 0.3, 1), 
+            background_color=(0.3, 0.3, 0.3, 1),
             foreground_color=(1, 1, 1, 1),
             cursor_color=(1, 0.6, 0.1, 1),
             padding=(15, 12),
@@ -73,7 +110,7 @@ class PasswordGameApp(App):
             pos_hint={'center_x': 0.5, 'y': 0.05},
             background_normal='',
             background_down='',
-            background_color=(1, 0.5, 0.1, 1) 
+            background_color=(1, 0.5, 0.1, 1)
         )
         self.submit_btn.bind(on_press=self.check_password)
 
@@ -89,13 +126,18 @@ class PasswordGameApp(App):
 
         self.rules_container = FloatLayout()
 
+        # Add all UI widgets AFTER the background
         self.layout.add_widget(self.title_label)
         self.layout.add_widget(self.result_label)
-        self.layout.add_widget(self.submit_btn)
         self.layout.add_widget(self.rules_container)
+        self.layout.add_widget(self.submit_btn)
         self.layout.add_widget(self.password_input)
 
         return self.layout
+
+    def on_stop(self):
+        if self.bg_music:
+            self.bg_music.stop()
 
     def get_all_rules(self):
         return [
@@ -124,10 +166,12 @@ class PasswordGameApp(App):
     def check_password(self, instance):
         pwd = self.password_input.text.strip().lower()
 
+        # Easter Egg: Rickroll
         if pwd == "rickroll":
             self.show_rickroll_popup()
             return
 
+        # Easter Egg: Bouncing Pig
         if pwd == "pig":
             self.spawn_bouncing_emoji("🐷")
             return
@@ -185,7 +229,7 @@ class PasswordGameApp(App):
                         pos_hint={'center_x': 0.5, 'top': 0.7})
         
         with box.canvas.before:
-            Color(0.2, 0.2, 0.2, 0.8) 
+            Color(0.2, 0.2, 0.2, 0.8)  # Semi-transparent dark box
             box.bg = RoundedRectangle(radius=[10], pos=box.pos, size=box.size)
 
         box.bind(pos=self.update_box_bg, size=self.update_box_bg)
@@ -286,46 +330,60 @@ class PasswordGameApp(App):
 
     def show_rickroll_popup(self):
         layout = BoxLayout(orientation='vertical', spacing=10, padding=20)
-        label = Label(
-            text="[b][color=ff5555] Never gonna give you up![/color][/b]",
-            markup=True,
-            font_size=24,
-            font_name="fonts/habeshapixels.regular.ttf",
-            halign='center',
-            valign='middle'
+
+        gif = Image(
+            source='assets/rr.gif', 
+            anim_delay=0.05,             
+            allow_stretch=False,
+            keep_ratio=True
         )
-        label.bind(size=label.setter("text_size"))
+        layout.add_widget(gif)
+
+        self.rickroll_sound = SoundLoader.load('sounds/rr.wav')
+        if self.rickroll_sound:
+            self.rickroll_sound.play()
 
         close_btn = Button(
             text="Close",
             font_name="fonts/habeshapixels.bold.ttf",
             size_hint_y=None,
             height=40,
-            on_press=lambda x: self.rickroll_popup.dismiss()
+            on_press=lambda x: self.close_rickroll_popup()
         )
-
-        layout.add_widget(label)
         layout.add_widget(close_btn)
 
-        self.rickroll_popup = Popup(title="", content=layout, size_hint=(0.8, None), height=200)
+        self.rickroll_popup = Popup(
+            title="",
+            content=layout,
+            size_hint=(0.8, 0.5),
+            auto_dismiss=False
+        )
         self.rickroll_popup.open()
 
-    def spawn_bouncing_emoji(self, emoji_char):
-        emoji_label = Label(
-            text=emoji_char,
-            font_size=64,
-            size_hint=(None, None),
-            size=(100, 100),
-            pos=(random.randint(0, 260), random.randint(0, 540)) 
-        )
-        self.layout.add_widget(emoji_label)
+    def close_rickroll_popup(self):
+        if hasattr(self, 'rickroll_sound') and self.rickroll_sound:
+            self.rickroll_sound.stop()
+        if hasattr(self, 'rickroll_popup'):
+            self.rickroll_popup.dismiss()
 
-        self.bounce_emoji(emoji_label, dx=5, dy=5)
+
+    def spawn_bouncing_emoji(self, emoji_char):
+        pig_image = Image(
+            source="assets/pig.png",
+            size_hint=(None, None),
+            size=(64, 64),
+            pos=(random.randint(0, 260), random.randint(0, 540))
+        )
+        self.layout.add_widget(pig_image)
+
+        self.bounce_emoji(pig_image, dx=5, dy=5)
+
     def bounce_emoji(self, widget, dx, dy):
         def move(dt):
             new_x = widget.x + dx
             new_y = widget.y + dy
 
+            # Bounce off edges
             if new_x < 0 or new_x + widget.width > Window.width:
                 dx_ref[0] *= -1
             if new_y < 0 or new_y + widget.height > Window.height:
