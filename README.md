@@ -20,4 +20,6 @@ It's *designed to test your patience* while forcing you to create the "perfect" 
 • Kivy
 • PyInstaller
 
-## ❤️ Made by Arnab Gupta
+---
+
+# ❤️ Made by Arnab Gupta
